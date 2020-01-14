@@ -7,7 +7,7 @@ const keyboardPersianChars = [ "ض", "ص", "ث", "ق", "ف", "غ", "ع", "ه", "
 const keyboardEnglishChars = [ "q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "[", "]", "a", "s", "d", "f", "g", "h", "j", "k", "l", ";", "'", "z", "x", "c", "v", "b", "n", "\\", ",","?","m" ];
 
 function replaceAll(text: string, find: string, replace: string) {
-  return text.replace(new RegExp(find, 'g'), replace);
+  return text.split(find).join(replace);
 }
 export class Persian {
   constructor(private text: string) { }
@@ -67,7 +67,3 @@ export class Persian {
     return this.text;
   }
 }
-
-const y = new Persian("لخخلمث").toEnglishKeyboard().value();
-
-const a = 1;
