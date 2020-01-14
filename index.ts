@@ -142,6 +142,13 @@ const keyboardEnglishChars = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", 
 function replaceAll(text: string, find: string, replace: string) {
   return text.split(find).join(replace);
 }
+
+function isEmpty(obj: any) {
+  if (obj === undefined || obj == null || (obj as string).trim() == "")
+    return true;
+  return false;
+}
+
 export class Persian {
   constructor(private text: string) { }
 
@@ -228,3 +235,81 @@ export class Persian {
   }
 }
 
+export enum AlphabetType {
+  English,
+  Persian
+}
+export class Rial {
+  constructor(private text: string) { }
+  private _cut = 0;
+  private _separator = '';
+  private _currency = '';
+  private _left = true;
+  private _alphabet = AlphabetType.Persian;
+  public cut(value: number) {
+    this._cut = value;
+    return this;
+  }
+
+  public separator(value: string): Rial {
+    this._separator = value;
+    return this;
+  }
+
+  public currency(value: string, left = true): Rial {
+    this._currency = value;
+    this._left = left;
+    return this;
+  }
+
+  public alphabet(value: AlphabetType): Rial {
+    this._alphabet = value;
+    return this;
+  }
+
+  private clean(str: string): void {
+    var chars = "0۰";
+    if (isEmpty(chars))
+      chars = "\s";
+    str = str.replace(new RegExp("^[" + chars + "]+"), "");
+    this.text = str.toString().replace(/[^0-9+۰-۹]/g, '');
+  }
+
+  private format(str: string): void {
+    str = str.split("").reverse().join("");
+    var n = str.match(/.{1,3}/g);
+    if (!n) return;
+    for (var i = 0; i < n.length; i++)
+      n[i] = n[i].split("").reverse().join("");
+    str = n.reverse().join(this._separator);
+    this.text = str;
+  }
+
+  private slice(str: string): void {
+    this.text = str.substring(0, str.length - this._cut);
+  }
+
+  public value(): string {
+    this.clean(this.text);
+    if (isEmpty(this.text))
+      return '';
+    if (this._alphabet === AlphabetType.English)
+      this.text = new Persian(this.text).toEnglishNumbers().value();
+    else
+      this.text = new Persian(this.text).toPersianNumbers().value();
+    this.slice(this.text);
+    this.format(this.text);
+    if (!isEmpty(this._currency) && !this._left)
+      this.text = this.text + " " + this._currency;
+    if (!isEmpty(this._currency) && this._left)
+      this.text = this._currency + " " + this.text;
+    return this.text;
+  }
+}
+
+/*
+var t1 = new Rial("۴۲۵,۴۲۰,۰۰۰").alphabet(AlphabetType.English).cut(0).currency("هزار ریال").value();
+var t2 = new Rial("۴۲۵,۴۲۰,۰۰۰").alphabet(AlphabetType.English).cut(3).currency("هزار ریال").value();
+console.log(t1);
+console.log(t2);
+*/
